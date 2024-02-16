@@ -1,0 +1,224 @@
+---
+title: "DSC1107 Formative Assessment 1"
+author: "DESQUITADO, Yuichi P."
+date: "2024-02-16"
+output: html_document
+---
+
+Load the needed packages.
+
+```{r}
+library(tidyverse)
+library(DescTools)
+diamonds
+```
+
+# **Lecture 2**
+
+Discrete Variables - We usually use bar charts to visualize discrete variables.
+
+```{r}
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut),
+           fill = "lightgreen",
+           alpha = 0.5)
+```
+
+INTERPRETATION: This plot implies that 20000 diamonds have ideal cut, which is the greatest count compared to others, such as Premium, Very good, Good, and Fair.
+
+
+Continuous Variables - We usually use histograms for continuous variable visualization.
+
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(
+    mapping = aes(x = carat),
+    binwidth = 0.01,
+    fill = "purple") +
+  coord_cartesian(xlim = c(0, 3))
+
+Mode(diamonds$carat)
+```
+
+INTERPRETATION: This plot shows that a value between 0.25 and 0.50 has the highest count in carat. If we check the mode of the dataset diamonds$carat, it is "0.3" with 2604 entries.
+
+Discrete vs. Discrete - We use count plots to visualize covariation between two discrete variables.
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_count(mapping = aes(x = cut,
+                           y = clarity),
+             color = "blue")
+```
+
+INTERPRETATION: According to the plot, the most abundant diamonds with specific cut and clarity are ideal-VS2, which has around 5000 count.
+
+Continuous vs. Continuous (Many to One) - Scatter plot is used for comparing covariations of continuous variables (many to one).
+
+```{r}
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = x,
+                           y = y),
+             color = "gold") +
+  geom_abline(slope = 1,
+              intercept = 0, 
+              color = "red") + 
+  coord_cartesian(xlim = c(3.5, 10), 
+                  ylim = c(3.5, 10))
+```
+
+INTERPRETATION: Data being huddled around the centerline means that the data follows normal distribution.
+
+Continuous vs. Continuous (One to One) - Line plot is used for comparing covariations of continuous variables (one to one).
+
+```{r}
+avgPriceByCarat <- diamonds %>%
+  mutate(carat = round(carat, 1)) %>%
+  group_by(carat) %>%
+  summarise(avg_price = mean(price))
+avgPriceByCarat
+
+ggplot(data = avgPriceByCarat, aes(x = carat,
+                                   y = avg_price)) + 
+  geom_line(mapping = aes(x = carat,
+                          y = avg_price),
+            color = "magenta",
+            linewidth = 1) +
+  geom_area(fill = "pink",
+            alpha = 0.5)
+```
+
+INTERPRETATION: This plot shows that the higher the carat, the higher the average price is, but there is a significant number of data that shows in between 3 and 4 carat, prices drop down almost the same to how 1-2 carats were priced.
+
+Continuous vs. Discrete - We use boxplot to visualize the covariation between continuous and discrete variables.
+
+```{r}
+ggplot(data = diamonds,
+       aes(x = cut,
+           y = price,
+           fill = cut,
+           color = cut,
+           alpha = 0.75)) +
+  geom_boxplot(mapping = aes(x = cut,
+                             y = price),
+               outlier.color = "black")
+```
+
+INTERPRETATION: There is a inverse correlation between price and cut, wherein the more that the cut is getting higher in quality, the more its median price becoming lower and cheaper.
+
+---
+
+# **Lecture 3**
+
+Exercise: Filter diamonds to those with ideal cut and at least 3 carats. How many such diamonds are there?
+
+```{r}
+filter(diamonds, cut %in% c("Ideal") & carat >= 3)
+```
+
+ANSWER: There are four diamonds that are in Ideal cut and has a carat greater than or equal to 3.
+
+Exercise: Select all columns except x, y, z.
+
+```{r}
+select(diamonds, -x, -y, -z)
+```
+
+Exercise: Arrange diamonds in decreasing order of their length. How long is the longest diamond?
+
+```{r}
+arrange(diamonds, desc(depth))
+```
+
+ANSWER: Longest is 79.0.
+
+Exercise: Add a variable called good_color that is TRUE if the color is D, E, F, G and FALSE otherwise.
+
+```{r}
+mutate(diamonds, good_color =
+         if_else(
+           condition = color %in% c("D", "E", "F", "G"),
+           true = TRUE,
+           false = FALSE))
+```
+
+Exercise: Use summarise to determine if there are any diamonds of at least one carat that cost less that $1000.
+
+```{r}
+summarise(diamonds, cheapDiamonds = any(price < 1000 & carat >= 1))
+```
+
+ANSWER: False (None)
+
+Exercise: Compute the mean price for diamonds of volume at least one carat
+
+```{r}
+diamonds %>%
+  filter(carat >= 1) %>%
+  mutate(meanPrice = mean(price)) #%>%
+  #ggplot() + 
+  #geom_histogram(aes(x = meanPrice))
+```
+
+Exercise: Reproduce the output of count(diamonds, cut) via group_by() and summarise()
+
+```{r}
+count(diamonds, cut)
+```
+ANSWER:
+
+```{r}
+diamonds %>%
+  group_by(cut) %>%
+  summarise(n = n())
+```
+
+------
+
+# **Lecture 4**
+
+heights2 = read_csv(file = "heights2.csv") 
+
+```{r}
+table1
+table2
+table3
+```
+ANSWER: table1 utilized columns to express variables/observations per country and year, table2 utilized rows in separating the observed variable, which is count on the last column, while table 3 used ration of case/population to simplify the presentation to three columns, yet still separated by year.
+
+Exercise: Use pivot_longer() to tidy table4b in a similar fashion. What is the difference between the code
+used to tidy table4a and table4b?
+
+```{r}
+table4b
+```
+
+ANSWER: The table4a tackles cases, while table4b tackles population.
+
+```{r}
+table4b %>%
+  pivot_longer(cols = c(`1999`, `2000`), names_to = "year", values_to = "population")
+```
+
+Exercises:
+
+1. Why does this code fail?
+
+ANSWER: Because the ``cols = c(1999, 2000)`` doesn't have backticks.
+
+2. 
+
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes", NA, 10,
+  "no", 20, 12
+)
+preg
+```
+
+```{r}
+preg %>%
+  pivot_longer(cols = c(male, female), names_to = "gender", values_to = "Answer")
+```
+
